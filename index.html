@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Challenge Quiz - e&</title>
+    <meta name="description" content="Interactive 2-player telecom knowledge quiz game with single player vs AI mode">
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#DC2626">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Quiz Challenge">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* CSS content from styles.css will be placed here */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        /* CSS Variables for Red Theme */
+        :root {
+          --primary: #DC2626;
+          --primary-foreground: #FEFEFE;
+          --secondary: #B91C1C;
+          --secondary-foreground: #1F2937;
+          --background: #FFFFFF;
+          --foreground: #0F172A;
+          --card: #FFFFFF;
+          --card-foreground: #0F172A;
+          --muted: #F1F5F9;
+          --muted-foreground: #64748B;
+          --accent: #F1F5F9;
+          --accent-foreground: #1E293B;
+          --destructive: #DC2626;
+          --destructive-foreground: #FEFEFE;
+          --border: #E2E8F0;
+          --input: #E2E8F0;
+          --ring: #DC2626;
+          --radius: 0.75rem;
+        }
+
+
+        body {
+          font-family: 'Inter', sans-serif;
+          background: linear-gradient(135deg, #FEF2F2 0%, #FFFFFF 50%, #FEF2F2 100%);
+          color: var(--foreground);
+          min-height: 100vh;
+          transition: all 0.3s ease;
+        }
+
+        /* Loading Screen */
+        .loading-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          background: var(--background);
+          z-index: 9999;
+        }
+
+        .loading-spinner {
+          width: 50px;
+          height: 50px;
+          border: 4px solid var(--muted);
+          border-top: 4px solid var(--primary);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        /* Layout */
+        .screen {
+          min-height: 100vh;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .hidden {
+          display: none !important;
+        }
+
+        .container {
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 2rem 1rem;
+          position: relative;
+          z-index: 10;
+        }
+
+        /* e& Logo */
+        .eand-logo {
+          position: fixed;
+          top: 1.5rem;
+          right: 1.5rem;
+          width: 8rem;
+          height: auto;
+          z-index: 20;
+        }
+
+        /* Background Decoration */
+        .bg-decoration {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+
+        .bg-blob {
+          position: absolute;
+          width: 24rem;
+          height: 24rem;
+          border-radius: 50%;
+          opacity: 0.2;
+          filter: blur(3rem);
+        }
+
+        .bg-blob-1 {
+          top: -6rem;
+          right: -6rem;
+          background: linear-gradient(135deg, #FCA5A5, #FDBA74);
+        }
+
+        .bg-blob-2 {
+          bottom: -6rem;
+          left: -6rem;
+          background: linear-gradient(135deg, #FDBA74, #FCA5A5);
+        }
+
+
+        /* Theme Toggle */
+        .theme-toggle {
+          position: fixed;
+          top: 1.5rem;
+          right: 11rem;
+          width: 3rem;
+          height: 3rem;
+          background: rgba(255, 255, 255, 0.8);
+          border: none;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          backdrop-filter: blur(16px);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          z-index: 20;
+          transition: all 0.2s ease;
+        }
+
+
+        /* Branding */
+        .branding {
+          text-align: center;
+          margin-bottom: 3rem;
+        }
+
+        .app-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 5rem;
+          height: 5rem;
+          background: linear-gradient(135deg, var(--primary), var(--secondary));
+          border-radius: 1.5rem;
+          margin-bottom: 1.5rem;
+          box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.3);
+        }
+
+        .app-icon i {
+          font-size: 2rem;
+          color: white;
+        }
+
+        .branding h1 {
+          font-size: 2.5rem;
+          font-weight: 700;
+          background: linear-gradient(135deg, var(--primary), var(--secondary));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-bottom: 0.5rem;
+        }
+
+        .branding p {
+          font-size: 1.125rem;
+          color: var(--muted-foreground);
+        }
+
+        /* Game Mode Selection */
+        .game-mode-section {
+          margin-bottom: 3rem;
+        }
+
+        .game-mode-section h2 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          text-align: center;
+          margin-bottom: 1.5rem;
+          color: var(--foreground);
+        }
+
+        .game-mode-buttons {
+          display: flex;
+          gap: 1rem;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+
+        .game-mode-btn {
+          flex: 1;
+          max-width: 18rem;
+          padding: 2rem 1.5rem;
+          background: var(--card);
+          border: 2px solid var(--border);
+          border-radius: var(--radius);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-align: center;
+          backdrop-filter: blur(16px);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-mode-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-mode-btn.active {
+          background: linear-gradient(135deg, var(--primary), var(--secondary));
+          border-color: var(--primary);
+          color: white;
+        }
+
+        .game-mode-btn i {
+          font-size: 2rem;
+          margin-bottom: 1rem;
+          display: block;
+        }
+
+        .mode-title {
+          font-size: 1.125rem;
+          font-weight: 600;
+          margin-bottom: 0.25rem;
+        }
+
+        .mode-subtitle {
+          font-size: 0.875rem;
+          opacity: 0.7;
+        }
+
+        /* Features Grid */
+        .features-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+          margin-bottom: 3rem;
+        }
+
+        .feature {
+          text-align: center;
+        }
+
+        .feature-icon {
+          width: 3rem;
+          height: 3rem;
+          background: var(--accent);
+          border-radius: var(--radius);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 0.5rem;
+        }
+
+        .feature-icon i {
+          font-size: 1.25rem;
+          color: var(--primary);
+        }
+
+        .feature p {
+          font-size: 0.875rem;
+          color: var(--muted-foreground);
+        }
+
+        /* Player Inputs */
+        .player-inputs {
+          margin-bottom: 3rem;
+        }
+
+        .player-inputs h2 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          text-align: center;
+          margin-bottom: 1.5rem;
+          color: var(--foreground);
+        }
+
+        .input-card {
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(16px);
+          padding: 1.5rem;
+          border-radius: var(--radius);
+          margin-bottom: 1rem;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .input-card {
+          background: rgba(31, 41, 55, 0.7);
+        }
+
+        .input-card label {
+          display: block;
+          font-size: 0.875rem;
+          font-weight: 500;
+          margin-bottom: 0.5rem;
+          color: var(--foreground);
+        }
+
+        .input-card label i {
+          margin-right: 0.5rem;
+          color: var(--primary);
+        }
+
+        .input-card input {
+          width: 100%;
+          padding: 0.75rem 1rem;
+          border: none;
+          border-radius: calc(var(--radius) - 2px);
+          background: var(--background);
+          color: var(--foreground);
+          font-size: 1rem;
+          transition: all 0.2s ease;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .input-card input:focus {
+          outline: none;
+          box-shadow: 0 0 0 2px var(--ring);
+        }
+
+        /* Buttons */
+        .start-btn, .play-again-btn, .share-btn, .next-btn {
+          width: 100%;
+          padding: 1rem 2rem;
+          background: linear-gradient(135deg, var(--primary), var(--secondary));
+          color: white;
+          border: none;
+          border-radius: var(--radius);
+          font-size: 1.125rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3);
+        }
+
+        .start-btn:hover, .play-again-btn:hover, .share-btn:hover, .next-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+        }
+
+        .start-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        /* Game Screen Styles */
+        .game-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(16px);
+          padding: 1.5rem;
+          border-radius: var(--radius);
+          margin-bottom: 2rem;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-score {
+          text-align: center;
+          flex: 1;
+        }
+
+        .score-circle {
+          position: relative;
+          display: inline-block;
+          margin-bottom: 0.5rem;
+        }
+
+        .progress-ring {
+          width: 4rem;
+          height: 4rem;
+          transform: rotate(-90deg);
+        }
+
+        .progress-bg {
+          fill: none;
+          stroke: var(--muted);
+          stroke-width: 4;
+        }
+
+        .progress-fill {
+          fill: none;
+          stroke: var(--primary);
+          stroke-width: 4;
+          stroke-linecap: round;
+          stroke-dasharray: 176;
+          stroke-dashoffset: 176;
+          transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .score-circle span {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 1.125rem;
+          font-weight: 700;
+          color: var(--primary);
+        }
+
+        .vs-indicator {
+          padding: 0 1rem;
+        }
+
+        .vs-indicator span {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 2rem;
+          height: 2rem;
+          background: linear-gradient(135deg, var(--primary), var(--secondary));
+          color: white;
+          border-radius: 50%;
+          font-size: 0.875rem;
+          font-weight: 700;
+        }
+
+        .progress-section {
+          margin-bottom: 2rem;
+        }
+
+        .progress-info {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.5rem;
+          font-size: 0.875rem;
+          color: var(--muted-foreground);
+        }
+
+        .progress-bar {
+          height: 0.5rem;
+          background: var(--muted);
+          border-radius: 0.25rem;
+          overflow: hidden;
+        }
+
+        .progress-bar .progress-fill {
+          height: 100%;
+          background: linear-gradient(135deg, var(--primary), var(--secondary));
+          transition: width 0.3s ease;
+          width: 0%;
+        }
+
+        /* Timer */
+        .timer-section {
+          text-align: center;
+          margin-bottom: 2rem;
+        }
+
+        .timer-circle {
+          position: relative;
+          display: inline-block;
+        }
+
+        .timer-ring {
+          width: 6rem;
+          height: 6rem;
+          transform: rotate(-90deg);
+        }
+
+        .timer-bg {
+          fill: none;
+          stroke: var(--muted);
+          stroke-width: 4;
+        }
+
+        .timer-progress {
+          fill: none;
+          stroke: var(--primary);
+          stroke-width: 4;
+          stroke-linecap: round;
+          stroke-dasharray: 283;
+          stroke-dashoffset: 0;
+          transition: stroke-dashoffset 0.1s linear;
+        }
+
+        .timer-circle span {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: var(--primary);
+        }
+
+        /* Question Section */
+        .question-section {
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(16px);
+          padding: 2rem;
+          border-radius: var(--radius);
+          margin-bottom: 2rem;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .question-section {
+          background: rgba(31, 41, 55, 0.8);
+        }
+
+        .question-section h3 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          text-align: center;
+          margin-bottom: 1.5rem;
+          color: var(--foreground);
+        }
+
+        .choices {
+          display: grid;
+          gap: 0.75rem;
+        }
+
+        .choice {
+          padding: 1rem;
+          background: var(--card);
+          border: 2px solid var(--border);
+          border-radius: calc(var(--radius) - 2px);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-align: center;
+          font-weight: 500;
+        }
+
+        .choice:hover {
+          background: var(--accent);
+          transform: translateY(-1px);
+        }
+
+        .choice.correct {
+          background: #DCFCE7;
+          border-color: #16A34A;
+          color: #15803D;
+        }
+
+        .choice.wrong {
+          background: #FEE2E2;
+          border-color: #DC2626;
+          color: #DC2626;
+        }
+
+        .choice.disabled {
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+
+        /* Result Screen */
+        .celebration {
+          text-align: center;
+          margin-bottom: 3rem;
+        }
+
+        .trophy-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 6rem;
+          height: 6rem;
+          background: linear-gradient(135deg, #F59E0B, #10B981);
+          border-radius: 2rem;
+          margin-bottom: 1.5rem;
+          animation: bounce 2s infinite;
+        }
+
+        .trophy-icon i {
+          font-size: 2.5rem;
+          color: white;
+        }
+
+        @keyframes bounce {
+          0%, 20%, 53%, 80%, 100% {
+            transform: translate3d(0,0,0);
+          }
+          40%, 43% {
+            transform: translate3d(0, -10px, 0);
+          }
+          70% {
+            transform: translate3d(0, -5px, 0);
+          }
+          90% {
+            transform: translate3d(0, -2px, 0);
+          }
+        }
+
+        .celebration h1 {
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 0.5rem;
+          color: var(--foreground);
+        }
+
+        .celebration p {
+          font-size: 1.125rem;
+          color: var(--muted-foreground);
+        }
+
+        .final-scores {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 1.5rem;
+          margin-bottom: 3rem;
+        }
+
+        .final-score {
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(16px);
+          padding: 2rem;
+          border-radius: var(--radius);
+          text-align: center;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .final-score {
+          background: rgba(31, 41, 55, 0.8);
+        }
+
+        .final-score h3 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
+          color: var(--foreground);
+        }
+
+        .score-display {
+          font-size: 3rem;
+          font-weight: 700;
+          color: var(--primary);
+          margin-bottom: 0.5rem;
+        }
+
+        .score-total {
+          font-size: 1.5rem;
+          color: var(--muted-foreground);
+        }
+
+        .final-score p {
+          color: var(--muted-foreground);
+        }
+
+        .result-actions {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .eand-logo {
+            width: 6rem;
+            top: 1rem;
+            right: 1rem;
+          }
+          
+       
+          .container {
+            padding: 1rem;
+          }
+          
+          .branding h1 {
+            font-size: 2rem;
+          }
+          
+          .game-mode-buttons {
+            flex-direction: column;
+          }
+          
+          .features-grid {
+            gap: 0.5rem;
+          }
+          
+          .game-header {
+            padding: 1rem;
+          }
+          
+          .vs-indicator {
+            padding: 0 0.5rem;
+          }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .animate-slide-up {
+          animation: slideUp 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Loading spinner -->
+        <div id="loading" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Loading Quiz...</p>
+        </div>
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <!-- e& Logo -->
+            <img src="https://www.eand.com/content/dam/eand/assets/img/etand-icons/logo-homepage.png" 
+                 alt="e& Logo" class="eand-logo">
+            
+            <!-- Background decoration -->
+            <div class="bg-decoration">
+                <div class="bg-blob bg-blob-1"></div>
+                <div class="bg-blob bg-blob-2"></div>
+            </div>
+            
+            <!-- Theme toggle -->
+            <button id="theme-toggle" class="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            
+            <div class="container">
+                <!-- Logo and branding -->
+                <div class="branding">
+                    <div class="app-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h1>Knowledge Challenge</h1>
+                    <p>Test your expertise</p>
+                </div>
+                
+                <!-- Game Mode Selection -->
+                <div class="game-mode-section">
+                    <h2>Choose Game Mode</h2>
+                    <div class="game-mode-buttons">
+                        <button class="game-mode-btn active" data-mode="single">
+                            <i class="fas fa-robot"></i>
+                            <div class="mode-title">Single Player</div>
+                            <div class="mode-subtitle">Play vs Computer</div>
+                        </button>
+                        <button class="game-mode-btn" data-mode="multiplayer">
+                            <i class="fas fa-users"></i>
+                            <div class="mode-title">Multiplayer</div>
+                            <div class="mode-subtitle">Play with friends</div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Player count selection -->
+                <div class="player-count-section" id="player-count-section" style="display: none;">
+                    <h2>Number of Players</h2>
+                    <div class="player-count-buttons">
+                        <button class="player-count-btn">2</button>
+                        <button class="player-count-btn">3</button>
+                        <button class="player-count-btn">4</button>
+                    </div>
+                </div>
+                
+                <!-- Player input form -->
+                <div class="player-inputs">
+                    <h2 id="input-title">Enter Your Name</h2>
+                    <div id="player-inputs">
+                        <div class="input-card">
+                            <label><i class="fas fa-user"></i> Player Name</label>
+                            <input type="text" class="player-input" placeholder="Enter name" maxlength="16">
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="start-game" class="start-btn" disabled>
+                    <i class="fas fa-play"></i> Start Game
+                </button>
+            </div>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen hidden">
+            <!-- e& Logo -->
+            <img src="https://www.eand.com/content/dam/eand/assets/img/etand-icons/logo-homepage.png" 
+                 alt="e& Logo" class="eand-logo">
+            
+            <div class="container">
+                <!-- Players sidebar -->
+                <div id="players-sidebar" class="players-sidebar"></div>
+                
+                <!-- Main game area -->
+                <div class="game-main">
+                    <!-- Timer -->
+                    <div class="timer-section">
+                        <div class="timer-circle">
+                            <svg class="timer-ring">
+                                <circle cx="50" cy="50" r="45" class="timer-bg"></circle>
+                                <circle cx="50" cy="50" r="45" class="timer-progress" id="timer-progress"></circle>
+                            </svg>
+                            <span id="timer-text">30</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Current player indicator -->
+                    <div class="current-player">
+                        <span id="current-player-indicator">Player's Turn</span>
+                    </div>
+                    
+                    <!-- Question -->
+                    <div class="question-section">
+                        <h3 id="question-text">Loading question...</h3>
+                        <div id="choices-container" class="choices">
+                            <!-- Choices will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <button id="next-question" class="next-btn hidden">
+                        Next Question <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen hidden">
+            <!-- e& Logo -->
+            <img src="https://www.eand.com/content/dam/eand/assets/img/etand-icons/logo-homepage.png" 
+                 alt="e& Logo" class="eand-logo">
+            
+            <div class="container">
+                <!-- Celebration header -->
+                <div class="celebration">
+                    <div class="trophy-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h1 id="result-title">Game Complete!</h1>
+                    <p id="result-subtitle">Great job!</p>
+                </div>
+                
+                <!-- Final scores -->
+                <div id="final-scores" class="final-scores">
+                    <!-- Scores will be populated by JavaScript -->
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="result-actions">
+                    <button id="play-again" class="play-again-btn">
+                        <i class="fas fa-redo"></i> Play Again
+                    </button>
+                    <button id="share-result" class="share-btn">
+                        <i class="fas fa-share"></i> Share Result
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Telecom Quiz Questions Database
+        const telecomQuestions = [
+          {
+            q: "What does 5G stand for?",
+            choices: ["5th Generation", "5 Gigabytes", "5 Groups", "5 Gateway"],
+            answer: 0
+          },
+          {
+            q: "Which frequency band is commonly used for 4G LTE?",
+            choices: ["900 MHz", "1800 MHz", "2100 MHz", "All of the above"],
+            answer: 3
+          },
+          {
+            q: "What is the maximum theoretical speed of 5G?",
+            choices: ["1 Gbps", "10 Gbps", "20 Gbps", "100 Gbps"],
+            answer: 2
+          },
+          {
+            q: "What does VoLTE stand for?",
+            choices: ["Voice over LTE", "Video over LTE", "Virtual over LTE", "Voice over Line"],
+            answer: 0
+          },
+          {
+            q: "Which technology is used for fiber optic communication?",
+            choices: ["Radio waves", "Light signals", "Electrical signals", "Sound waves"],
+            answer: 1
+          },
+          {
+            q: "What is the purpose of a Base Station Controller (BSC)?",
+            choices: ["Control radio resources", "Manage billing", "Store user data", "Route calls"],
+            answer: 0
+          },
+          {
+            q: "In GSM, what does IMEI stand for?",
+            choices: ["International Mobile Equipment Identity", "Internal Mobile Equipment ID", "International Mobile Electronic Identity", "Internal Mobile Electronic ID"],
+            answer: 0
+          },
+          {
+            q: "What is the standard for WiFi 6?",
+            choices: ["802.11ac", "802.11ax", "802.11n", "802.11g"],
+            answer: 1
+          },
+          {
+            q: "Which protocol is used for internet communication?",
+            choices: ["HTTP", "TCP/IP", "FTP", "SMTP"],
+            answer: 1
+          },
+          {
+            q: "What does IoT stand for?",
+            choices: ["Internet of Things", "Internet over Technology", "Internal of Technology", "Internet on Technology"],
+            answer: 0
+          },
+          {
+            q: "What is the main advantage of fiber optic cables over copper cables?",
+            choices: ["Lower cost", "Higher bandwidth", "Easier installation", "Better durability"],
+            answer: 1
+          },
+          {
+            q: "In mobile networks, what does MIMO stand for?",
+            choices: ["Multiple Input Multiple Output", "Mobile Input Mobile Output", "Multi Input Multi Output", "Mobile Internet Mobile Output"],
+            answer: 0
+          },
+          {
+            q: "What is the typical latency target for 5G networks?",
+            choices: ["100ms", "50ms", "10ms", "1ms"],
+            answer: 3
+          },
+          {
+            q: "Which generation of mobile technology introduced data services?",
+            choices: ["1G", "2G", "3G", "4G"],
+            answer: 1
+          },
+          {
+            q: "What does NFV stand for in telecommunications?",
+            choices: ["Network Function Virtualization", "New Function Virtualization", "Network Function Verification", "New Function Verification"],
+            answer: 0
+          },
+          {
+            q: "What is the primary purpose of a firewall?",
+            choices: ["Increase speed", "Network security", "Data storage", "Signal amplification"],
+            answer: 1
+          },
+          {
+            q: "In satellite communication, what does GEO stand for?",
+            choices: ["Global Earth Orbit", "Geostationary Earth Orbit", "General Earth Orbit", "Geographic Earth Orbit"],
+            answer: 1
+          },
+          {
+            q: "What is the frequency range of the C-band used in satellites?",
+            choices: ["1-2 GHz", "4-8 GHz", "10-12 GHz", "14-18 GHz"],
+            answer: 1
+          },
+          {
+            q: "Which technology enables network slicing in 5G?",
+            choices: ["SDN", "NFV", "Both SDN and NFV", "Cloud computing"],
+            answer: 2
+          },
+          {
+            q: "What does QoS stand for in networking?",
+            choices: ["Quality of Service", "Quantity of Service", "Quick of Service", "Query of Service"],
+            answer: 0
+          },
+          {
+            q: "In optical fiber, what causes signal loss?",
+            choices: ["Attenuation", "Amplification", "Modulation", "Demodulation"],
+            answer: 0
+          },
+          {
+            q: "What is the main function of a router?",
+            choices: ["Amplify signals", "Route data packets", "Store data", "Convert signals"],
+            answer: 1
+          },
+          {
+            q: "What does OFDM stand for?",
+            choices: ["Orthogonal Frequency Division Multiplexing", "Optical Frequency Division Multiplexing", "Orthogonal Function Division Multiplexing", "Optical Function Division Multiplexing"],
+            answer: 0
+          },
+          {
+            q: "Which layer of the OSI model handles routing?",
+            choices: ["Physical", "Data Link", "Network", "Transport"],
+            answer: 2
+          },
+          {
+            q: "What is the purpose of error correction codes?",
+            choices: ["Increase speed", "Detect and correct errors", "Compress data", "Encrypt data"],
+            answer: 1
+          },
+          {
+            q: "In wireless communication, what does CSMA/CD stand for?",
+            choices: ["Carrier Sense Multiple Access/Collision Detection", "Circuit Switch Multiple Access/Collision Detection", "Carrier Sense Multiple Access/Connection Detection", "Circuit Sense Multiple Access/Connection Detection"],
+            answer: 0
+          },
+          {
+            q: "What is the typical range of Bluetooth Low Energy (BLE)?",
+            choices: ["1-10 meters", "10-50 meters", "50-100 meters", "100-200 meters"],
+            answer: 1
+          },
+          {
+            q: "Which modulation technique is commonly used in digital communication?",
+            choices: ["AM", "FM", "QAM", "PM"],
+            answer: 2
+          },
+          {
+            q: "What does MPLS stand for in networking?",
+            choices: ["Multi-Protocol Label Switching", "Multiple Protocol Label Switching", "Multi-Path Label Switching", "Multiple Path Label Switching"],
+            answer: 0
+          },
+          {
+            q: "In mobile networks, what is the function of the Home Location Register (HLR)?",
+            choices: ["Store subscriber information", "Route calls", "Manage billing", "Control base stations"],
+            answer: 0
+          }
+        ];
+
+        // Function to get random questions
+        function getRandomQuestions(count = 10) {
+          const shuffled = [...telecomQuestions].sort(() => 0.5 - Math.random());
+          return shuffled.slice(0, count);
+        }
+
+        // Quiz Game Application - Updated with Red Gradient and Multiplayer Support
+        class QuizGame {
+            constructor() {
+                this.gameState = {
+                    currentPlayer: 0,
+                    players: [],
+                    currentQuestionIndex: 0,
+                    totalQuestions: 10, // Changed from 20 to 10 for leaderboard scoring
+                    isGameComplete: false,
+                    timeRemaining: 30,
+                    hasAnswered: false,
+                    gameMode: 'single'
+                };
+                
+                this.questions = [];
+                this.timer = null;
+                this.timerInterval = null;
+                this.aiTimeout = null;
+                
+                this.initializeEventListeners();
+                this.hideLoading();
+            }
+            
+            initializeEventListeners() {
+                // Game mode selection
+                document.querySelectorAll('.game-mode-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.selectGameMode(e.target.closest('.game-mode-btn')));
+                });
+                
+                // Player count selection
+                document.querySelectorAll('.player-count-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.selectPlayerCount(e.target));
+                });
+                
+                // Player inputs
+                document.querySelectorAll('.player-input').forEach((input, index) => {
+                    input.addEventListener('input', () => this.validateInputs());
+                });
+                
+                // Start game
+                document.getElementById('start-game').addEventListener('click', () => this.startGame());
+                
+                // Next question
+                document.getElementById('next-question').addEventListener('click', () => this.nextQuestion());
+                
+                // Play again
+                document.getElementById('play-again').addEventListener('click', () => this.resetGame());
+                
+                // Share result
+                document.getElementById('share-result').addEventListener('click', () => this.shareResult());
+                
+                // Theme toggle
+                document.getElementById('theme-toggle').addEventListener('click', () => {
+                    document.body.classList.toggle('dark');
+                    const icon = document.querySelector('#theme-toggle i');
+                    if (document.body.classList.contains('dark')) {
+                        icon.classList.replace('fa-moon', 'fa-sun');
+                    } else {
+                        icon.classList.replace('fa-sun', 'fa-moon');
+                    }
+                });
+            }
+            
+            hideLoading() {
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('start-screen').classList.remove('hidden');
+                }, 1000);
+            }
+            
+            selectGameMode(button) {
+                // Remove active class from all buttons
+                document.querySelectorAll('.game-mode-btn').forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to selected button
+                button.classList.add('active');
+                
+                // Update game state and UI
+                const mode = button.dataset.mode;
+                this.gameState.gameMode = mode;
+                
+                // Show/hide player count section
+                const playerCountSection = document.getElementById('player-count-section');
+                if (mode === 'multiplayer') {
+                    playerCountSection.style.display = 'block';
+                } else {
+                    playerCountSection.style.display = 'none';
+                }
+                
+                // Update UI elements
+                this.updateInputSection();
+                this.validateInputs();
+            }
+            
+            selectPlayerCount(button) {
+                // Remove active class from all buttons
+                document.querySelectorAll('.player-count-btn').forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to selected button
+                button.classList.add('active');
+                
+                this.gameState.playerCount = parseInt(button.textContent);
+                this.updateInputSection();
+                this.validateInputs();
+            }
+            
+            updateInputSection() {
+                const inputSection = document.getElementById('player-inputs');
+                const mode = this.gameState.gameMode;
+                const playerCount = this.gameState.playerCount || 2;
+                
+                inputSection.innerHTML = '';
+                
+                if (mode === 'single') {
+                    // Single player input
+                    const inputCard = this.createPlayerInput(0, 'Your Name');
+                    inputSection.appendChild(inputCard);
+                } else if (mode === 'multiplayer') {
+                    // Multiple player inputs
+                    for (let i = 0; i < playerCount; i++) {
+                        const inputCard = this.createPlayerInput(i, `Player ${i + 1}`);
+                        inputSection.appendChild(inputCard);
+                    }
+                }
+            }
+            
+            createPlayerInput(index, label) {
+                const div = document.createElement('div');
+                div.className = 'input-card';
+                div.innerHTML = `
+                    <label><i class="fas fa-user"></i> ${label}</label>
+                    <input type="text" class="player-input" data-index="${index}" placeholder="Enter name" maxlength="16">
+                `;
+                
+                // Add event listener
+                const input = div.querySelector('input');
+                input.addEventListener('input', () => this.validateInputs());
+                
+                return div;
+            }
+            
+            validateInputs() {
+                const inputs = document.querySelectorAll('.player-input');
+                const mode = this.gameState.gameMode;
+                const startBtn = document.getElementById('start-game');
+                
+                let requiredInputs = 1;
+                if (mode === 'multiplayer') {
+                    requiredInputs = this.gameState.playerCount || 2;
+                }
+                
+                let validInputs = 0;
+                inputs.forEach((input, index) => {
+                    if (index < requiredInputs && input.value.trim()) {
+                        validInputs++;
+                    }
+                });
+                
+                startBtn.disabled = validInputs < requiredInputs;
+            }
+            
+            startGame() {
+                const inputs = document.querySelectorAll('.player-input');
+                const mode = this.gameState.gameMode;
+                
+                // Collect player names
+                this.gameState.players = [];
+                inputs.forEach((input, index) => {
+                    if (input.value.trim()) {
+                        this.gameState.players.push({
+                            name: input.value.trim(),
+                            score: 0,
+                            correctAnswers: 0,
+                            wrongAnswers: []
+                        });
+                    }
+                });
+                
+                // Add computer player for single mode
+                if (mode === 'single') {
+                    this.gameState.players.push({
+                        name: 'Computer',
+                        score: 0,
+                        correctAnswers: 0,
+                        wrongAnswers: []
+                    });
+                }
+                
+                // Initialize game state
+                this.gameState.currentPlayer = 0;
+                this.gameState.currentQuestionIndex = 0;
+                this.gameState.isGameComplete = false;
+                this.gameState.hasAnswered = false;
+                
+                // Get random questions
+                this.questions = getRandomQuestions(this.gameState.totalQuestions);
+                
+                // Switch to game screen
+                this.showScreen('game-screen');
+                this.initializeGameScreen();
+                this.displayQuestion();
+                this.startTimer();
+            }
+            
+            initializeGameScreen() {
+                // Update player displays with prominent left sidebar
+                this.updatePlayerSidebar();
+            }
+            
+            updatePlayerSidebar() {
+                const sidebar = document.getElementById('players-sidebar');
+                sidebar.innerHTML = '<h3>Players</h3>';
+                
+                this.gameState.players.forEach((player, index) => {
+                    const isCurrentPlayer = index === this.gameState.currentPlayer;
+                    const playerCard = document.createElement('div');
+                    playerCard.className = `player-card ${isCurrentPlayer ? 'active' : ''}`;
+                    
+                    playerCard.innerHTML = `
+                        <div class="player-header">
+                            <div class="player-indicator ${isCurrentPlayer ? 'active' : ''}"></div>
+                            <h4>${player.name}</h4>
+                            ${isCurrentPlayer ? '<span class="current-turn">Current Turn</span>' : ''}
+                        </div>
+                        <div class="player-score">
+                            <span class="score">${player.score}</span>
+                            <span class="total">/ ${this.gameState.totalQuestions}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(player.score / this.gameState.totalQuestions) * 100}%"></div>
+                        </div>
+                    `;
+                    
+                    sidebar.appendChild(playerCard);
+                });
+            }
+            
+            displayQuestion() {
+                const question = this.questions[this.gameState.currentQuestionIndex];
+                
+                // Update question text
+                document.getElementById('question-text').textContent = question.q;
+                
+                // Update current player indicator
+                const currentPlayerName = this.gameState.players[this.gameState.currentPlayer].name;
+                document.getElementById('current-player-indicator').textContent = `${currentPlayerName}'s Turn`;
+                
+                // Create choice buttons
+                const choicesContainer = document.getElementById('choices-container');
+                choicesContainer.innerHTML = '';
+                
+                question.choices.forEach((choice, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'choice';
+                    button.textContent = choice;
+                    button.addEventListener('click', () => this.answerQuestion(index));
+                    choicesContainer.appendChild(button);
+                });
+                
+                // Reset timer
+                this.gameState.timeRemaining = 30;
+                this.gameState.hasAnswered = false;
+                document.getElementById('next-question').classList.add('hidden');
+                
+                this.updatePlayerSidebar();
+            }
+            
+            startTimer() {
+                this.updateTimerDisplay();
+                
+                this.timerInterval = setInterval(() => {
+                    this.gameState.timeRemaining--;
+                    this.updateTimerDisplay();
+                    
+                    if (this.gameState.timeRemaining <= 0) {
+                        this.timeUp();
+                    }
+                }, 1000);
+            }
+            
+            updateTimerDisplay() {
+                const timerText = document.getElementById('timer-text');
+                const timerProgress = document.getElementById('timer-progress');
+                
+                timerText.textContent = this.gameState.timeRemaining;
+                
+                // Calculate progress (251.2 is the circumference of the circle)
+                const progress = (this.gameState.timeRemaining / 30) * 251.2;
+                timerProgress.style.strokeDashoffset = 251.2 - progress;
+                
+                // Change color based on time remaining
+                if (this.gameState.timeRemaining <= 5) {
+                    timerProgress.style.stroke = '#EF4444'; // Red
+                } else if (this.gameState.timeRemaining <= 10) {
+                    timerProgress.style.stroke = '#F97316'; // Orange
+                } else {
+                    timerProgress.style.stroke = '#DC2626'; // Primary red
+                }
+            }
+            
+            answerQuestion(answerIndex) {
+                if (this.gameState.hasAnswered) return;
+                
+                this.gameState.hasAnswered = true;
+                clearInterval(this.timerInterval);
+                clearTimeout(this.aiTimeout);
+                
+                const question = this.questions[this.gameState.currentQuestionIndex];
+                const isCorrect = answerIndex === question.answer;
+                const currentPlayer = this.gameState.players[this.gameState.currentPlayer];
+                
+                // Update player stats
+                if (isCorrect) {
+                    currentPlayer.score++;
+                    currentPlayer.correctAnswers++;
+                } else {
+                    currentPlayer.wrongAnswers.push({
+                        question: question.q,
+                        userAnswer: question.choices[answerIndex],
+                        correctAnswer: question.choices[question.answer]
+                    });
+                }
+                
+                // Show correct/wrong answers
+                const choices = document.querySelectorAll('.choice');
+                choices.forEach((choice, index) => {
+                    choice.classList.add('disabled');
+                    if (index === question.answer) {
+                        choice.classList.add('correct');
+                    } else if (index === answerIndex && !isCorrect) {
+                        choice.classList.add('wrong');
+                    }
+                });
+             
+              
+              
+              
+              
+              
+                // Update sidebar and show next button
+                this.updatePlayerSidebar();
+                document.getElementById('next-question').classList.remove('hidden');
+                
+                // Play sound feedback
+                this.playFeedbackSound(isCorrect);
+            }
+            
+            timeUp() {
+                if (this.gameState.hasAnswered) return;
+                
+                this.gameState.hasAnswered = true;
+                clearInterval(this.timerInterval);
+                clearTimeout(this.aiTimeout);
+                
+                const question = this.questions[this.gameState.currentQuestionIndex];
+                const currentPlayer = this.gameState.players[this.gameState.currentPlayer];
+                
+                // Add as wrong answer
+                currentPlayer.wrongAnswers.push({
+                    question: question.q,
+                    userAnswer: "Time ran out",
+                    correctAnswer: question.choices[question.answer]
+                });
+                
+                // Show correct answer
+                const choices = document.querySelectorAll('.choice');
+                choices.forEach((choice, index) => {
+                    choice.classList.add('disabled');
+                    if (index === question.answer) {
+                        choice.classList.add('correct');
+                    }
+                });
+                
+                document.getElementById('next-question').classList.remove('hidden');
+                this.playFeedbackSound(false);
+            }
+            
+            nextQuestion() {
+                this.gameState.currentQuestionIndex++;
+                
+                if (this.gameState.currentQuestionIndex >= this.gameState.totalQuestions) {
+                    this.endGame();
+                    return;
+                }
+                
+                // Switch to next player
+                this.gameState.currentPlayer = (this.gameState.currentPlayer + 1) % this.gameState.players.length;
+                
+                this.displayQuestion();
+                this.startTimer();
+                
+                // Handle AI turn for single player
+                if (this.gameState.gameMode === 'single' && this.gameState.players[this.gameState.currentPlayer].name === 'Computer') {
+                    this.handleAITurn();
+                }
+            }
+            
+            handleAITurn() {
+                // AI takes 2-5 seconds to answer
+                const delay = Math.random() * 3000 + 2000;
+                
+                this.aiTimeout = setTimeout(() => {
+                    if (this.gameState.hasAnswered) return;
+                    
+                    const question = this.questions[this.gameState.currentQuestionIndex];
+                    
+                    // AI has 75% chance to get it right
+                    const isAICorrect = Math.random() < 0.75;
+                    let aiAnswer;
+                    
+                    if (isAICorrect) {
+                        aiAnswer = question.answer;
+                    } else {
+                        // Choose a random wrong answer
+                        const wrongAnswers = [0, 1, 2, 3].filter(i => i !== question.answer);
+                        aiAnswer = wrongAnswers[Math.floor(Math.random() * wrongAnswers.length)];
+                    }
+                    
+                    this.answerQuestion(aiAnswer);
+                }, delay);
+            }
+            
+            endGame() {
+                this.gameState.isGameComplete = true;
+                this.showScreen('result-screen');
+                this.displayResults();
+            }
+            
+            displayResults() {
+                const winner = this.getWinner();
+                
+                // Update result title
+                if (winner) {
+                    document.getElementById('result-title').textContent = `${winner.name} Wins!`;
+                    document.getElementById('result-subtitle').textContent = 'Congratulations!';
+                } else {
+                    document.getElementById('result-title').textContent = "It's a Tie!";
+                    document.getElementById('result-subtitle').textContent = 'Great game!';
+                }
+                
+                // Update final scores
+                const scoresContainer = document.getElementById('final-scores');
+                scoresContainer.innerHTML = '';
+                
+                this.gameState.players.forEach(player => {
+                    const scoreCard = document.createElement('div');
+                    scoreCard.className = 'final-score';
+                    scoreCard.innerHTML = `
+                        <h3>${player.name}</h3>
+                        <div class="score-display">
+                            <span class="score">${player.score}</span>
+                            <span class="score-total">/ ${this.gameState.totalQuestions}</span>
+                        </div>
+                        <p>${this.calculateAccuracy(player)}% Accuracy</p>
+                    `;
+                    scoresContainer.appendChild(scoreCard);
+                });
+                
+                // Save to local storage
+                this.saveGameToLocalStorage();
+            }
+            
+            getWinner() {
+                if (this.gameState.players.length < 2) return this.gameState.players[0];
+                
+                let maxScore = Math.max(...this.gameState.players.map(p => p.score));
+                let winners = this.gameState.players.filter(p => p.score === maxScore);
+                
+                return winners.length === 1 ? winners[0] : null; // Tie if multiple winners
+            }
+            
+            calculateAccuracy(player) {
+                return Math.round((player.score / this.gameState.totalQuestions) * 100);
+            }
+            
+            resetGame() {
+                // Clear any running timers
+                clearInterval(this.timerInterval);
+                clearTimeout(this.aiTimeout);
+                
+                // Reset form
+                document.querySelectorAll('.player-input').forEach(input => input.value = '');
+                
+                // Show start screen
+                this.showScreen('start-screen');
+                this.validateInputs();
+            }
+            
+            shareResult() {
+                const winner = this.getWinner();
+                const resultText = winner ? 
+                    `🏆 ${winner.name} won the Knowledge Challenge quiz with ${winner.score}/${this.gameState.totalQuestions} points!` :
+                    `🤝 Tie game in Knowledge Challenge quiz!`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Knowledge Challenge Quiz Result',
+                        text: resultText,
+                        url: window.location.href
+                    });
+                } else {
+                    // Fallback: copy to clipboard
+                    navigator.clipboard.writeText(resultText).then(() => {
+                        alert('Result copied to clipboard!');
+                    });
+                }
+            }
+            
+            saveGameToLocalStorage() {
+                const gameHistory = JSON.parse(localStorage.getItem('quizGameHistory') || '[]');
+                const gameRecord = {
+                    id: Date.now(),
+                    date: new Date().toISOString(),
+                    players: this.gameState.players,
+                    winner: this.getWinner(),
+                    gameMode: this.gameState.gameMode
+                };
+                gameHistory.unshift(gameRecord);
+                
+                // Keep only last 10 games
+                if (gameHistory.length > 10) {
+                    gameHistory.splice(10);
+                }
+                
+                localStorage.setItem('quizGameHistory', JSON.stringify(gameHistory));
+            }
+            
+            showScreen(screenId) {
+                // Hide all screens
+                document.querySelectorAll('.screen').forEach(screen => screen.classList.add('hidden'));
+                
+                // Show target screen
+                document.getElementById(screenId).classList.remove('hidden');
+            }
+            
+            playFeedbackSound(isCorrect) {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    if (isCorrect) {
+                        // Success sound
+                        oscillator.frequency.setValueAtTime(523, audioContext.currentTime);
+                        oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1);
+                        oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2);
+                    } else {
+                        // Error sound
+                        oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                        oscillator.frequency.setValueAtTime(200, audioContext.currentTime + 0.1);
+                    }
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                } catch (error) {
+                    // Silently fail if audio context is not available
+                }
+            }
+        }
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new QuizGame();
+            
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('sw.js')
+                        .then(registration => console.log('SW registered'))
+                        .catch(error => console.log('SW registration failed'));
+                });
+            }
+        });
+    </script>
+</body>
+</html>

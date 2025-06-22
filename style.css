@@ -1,0 +1,104 @@
+/* Update these styles in your CSS section */
+
+/* Game Mode Section */
+.game-mode-section {
+  margin-bottom: 2.5rem;
+}
+
+.game-mode-section h2 {
+  font-size: 1.75rem; /* Increased from 1.5rem */
+  margin-bottom: 2rem; /* Increased from 1.5rem */
+}
+
+.game-mode-buttons {
+  gap: 1.5rem; /* Increased from 1rem */
+  margin-bottom: 2rem;
+}
+
+.game-mode-btn {
+  min-height: 120px; /* Set minimum height */
+  padding: 1.5rem; /* Increased padding */
+}
+
+/* Player Count Section */
+.player-count-section {
+  margin-bottom: 2.5rem;
+}
+
+.player-count-section h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.player-count-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.player-count-btn {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.player-count-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.player-count-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Player Inputs Section */
+.player-inputs {
+  margin-bottom: 3rem;
+}
+
+.player-inputs h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.input-card {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem; /* Increased spacing */
+}
+
+.input-card label {
+  font-size: 1rem; /* Increased from 0.875rem */
+  margin-bottom: 0.75rem; /* Increased spacing */
+}
+
+.input-card input {
+  padding: 1rem; /* Increased from 0.75rem */
+  font-size: 1.1rem; /* Slightly larger text */
+}
+
+/* Start Button */
+.start-btn {
+  padding: 1.25rem 2rem; /* More vertical padding */
+  font-size: 1.25rem; /* Larger text */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .game-mode-buttons {
+    flex-direction: column;
+  }
+  
+  .game-mode-btn {
+    min-height: 100px;
+  }
+  
+  .player-count-buttons {
+    flex-wrap: wrap;
+  }
+}
